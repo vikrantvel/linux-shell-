@@ -1,0 +1,62 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+void FCFS(int requests[], int n, int head) {
+    int seek_count = 0;
+    for (int i = 0; i < n; i++) {
+        seek_count += abs(requests[i] - head);
+        head = requests[i];
+    }
+    printf("Total seek operations (FCFS): %d\n", seek_count);
+}
+
+void SCAN(int requests[], int n, int head, int direction, int disk_size) {
+    int seek_count = 0;
+    int sorted[n + 1];
+    for (int i = 0; i < n; i++) sorted[i] = requests[i];
+    sorted[n] = head;
+    qsort(sorted, n + 1, sizeof(int), (int (*)(const void *, const void *))abs);
+    
+    int index = 0;
+    for (int i = 0; i < n + 1; i++) if (sorted[i] == head) index = i;
+    
+    if (direction == 1) { // Moving up
+        for (int i = index; i < n + 1; i++) seek_count += abs(sorted[i] - head), head = sorted[i];
+        seek_count += disk_size - head;
+    } else { // Moving down
+        for (int i = index; i >= 0; i--) seek_count += abs(sorted[i] - head), head = sorted[i];
+        seek_count += head;
+    }
+    printf("Total seek operations (SCAN): %d\n", seek_count);
+}
+
+void CSCAN(int requests[], int n, int head, int disk_size) {
+    int seek_count = 0;
+    int sorted[n + 1];
+    for (int i = 0; i < n; i++) sorted[i] = requests[i];
+    sorted[n] = head;
+    qsort(sorted, n + 1, sizeof(int), (int (*)(const void *, const void *))abs);
+
+    int index = 0;
+    for (int i = 0; i < n + 1; i++) if (sorted[i] == head) index = i;
+    
+    for (int i = index; i < n + 1; i++) seek_count += abs(sorted[i] - head), head = sorted[i];
+    seek_count += disk_size - head;
+    for (int i = 0; i < index; i++) seek_count += abs(sorted[i] - head), head = sorted[i];
+    
+    printf("Total seek operations (C-SCAN): %d\n", seek_count);
+}
+
+int main() {
+    int requests[] = {98, 183, 37, 122, 14, 124, 65, 67};
+    int n = sizeof(requests) / sizeof(requests[0]);
+    int head = 53;
+    int disk_size = 200;
+    int direction = 1; // 1 for upward, 0 for downward in SCAN
+
+    FCFS(requests, n, head);
+    SCAN(requests, n, head, direction, disk_size);
+    CSCAN(requests, n, head, disk_size);
+
+    return 0;
+}
